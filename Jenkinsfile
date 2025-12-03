@@ -2,7 +2,7 @@ pipeline {
     agent any
 
     environment {
-        DOCKER_CREDS = credentials('426d9ce3-4878-4ad6-9920-a56744a63f32')
+        DOCKER_CREDS = credentials('99c20544-5e31-4a6f-8dba-0aea2ab59516')
         DOCKER_IMAGE = "nagababu92/petclinic"
     }
 
