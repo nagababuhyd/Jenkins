@@ -14,6 +14,14 @@ pipeline {
             }
         }
 
+        stage('Test Maven') {
+            steps {
+                bat "where mvn"
+                bat "mvn -version"
+            }
+        }
+
+
         stage('Maven Build & Test') {
             steps {
                 bat "mvn clean package -DskipTests=false"
