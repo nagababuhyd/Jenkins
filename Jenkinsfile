@@ -49,5 +49,12 @@ pipeline {
                 }
             }
         }
+
+      stage('Run Container on Different Port') {
+            steps {
+                bat "docker run -d -p 9090:8080 %DOCKER_IMAGE%:%BUILD_NUMBER%"
+            }
+        }
+
     }
 }
