@@ -1,39 +1,50 @@
 pipeline {
     agent any
-    tools{
-        maven 'maven_3_5_0'
-    }
-    stages{
-        stage('Build Maven'){
-            steps{
-                checkout([$class: 'GitSCM', branches: [[name: '*/main']], extensions: [], userRemoteConfigs: [[url: 'https://github.com/Java-Techie-jt/devops-automation']]])
-                sh 'mvn clean install'
-            }
-        }
-        stage('Build docker image'){
-            steps{
-                script{
-                    sh 'docker build -t javatechie/devops-integration .'
-                }
-            }
-        }
-        stage('Push image to Hub'){
-            steps{
-                script{
-                   withCredentials([string(credentialsId: 'dockerhub-pwd', variable: 'dockerhubpwd')]) {
-                   sh 'docker login -u javatechie -p ${dockerhubpwd}'
 
-}
-                   sh 'docker push javatechie/devops-integration'
-                }
+    environment {
+        DOCKER_CREDS = credentials('dockerhub-creds')
+        DOCKER_IMAGE = "nagababu92/petclinic"
+    }
+
+    stages {
+
+        stage('Checkout') {
+            steps {
+                git branch: 'master',
+                    url: 'https://github.com/nagababuhyd/Jenkins.git'
+
             }
         }
-        stage('Deploy to k8s'){
-            steps{
-                script{
-                    kubernetesDeploy (configs: 'deploymentservice.yaml',kubeconfigId: 'k8sconfigpwd')
-                }
+
+        stage('Maven Build & Test') {
+            steps {
+                sh 'mvn clean package -DskipTests=false'
             }
+        }
+
+        stage('Docker Build') {
+            steps {
+                sh """
+                docker build -t $DOCKER_IMAGE:${BUILD_NUMBER} .
+                docker tag $DOCKER_IMAGE:${BUILD_NUMBER} $DOCKER_IMAGE:latest
+                """
+            }
+        }
+
+        stage('Docker Login & Push') {
+            steps {
+                sh """
+                echo $DOCKER_CREDS_PSW | docker login -u $DOCKER_CREDS_USR --password-stdin
+                docker push $DOCKER_IMAGE:${BUILD_NUMBER}
+                docker push $DOCKER_IMAGE:latest
+                """
+            }
+        }
+    }
+
+    post {
+        always {
+            cleanWs()
         }
     }
 }
