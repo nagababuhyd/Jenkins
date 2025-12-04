@@ -5,7 +5,7 @@ pipeline {
 
         stage('Checkout') {
             steps {
-                git branch: 'test',
+                git branch: 'tegit-webhook',
                     url: 'https://github.com/nagababuhyd/Jenkins.git'
             }
         }
